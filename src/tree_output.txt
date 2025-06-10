@@ -1,0 +1,119 @@
+Структура папок
+D:.
+│   tree_output.txt
+│   
+├───app
+│   │   favicon.ico
+│   │   globals.css
+│   │   layout.tsx
+│   │   
+│   ├───(external)
+│   │       page.tsx
+│   │       
+│   └───(main)
+│       ├───auth
+│       │   │   layout.tsx
+│       │   │   
+│       │   └───login
+│       │       │   page.tsx
+│       │       │   
+│       │       └───_components
+│       │               login-form.tsx
+│       │               
+│       ├───dashboard
+│       │   │   layout.tsx
+│       │   │   page.tsx
+│       │   │   
+│       │   ├───about
+│       │   │       page.tsx
+│       │   │       
+│       │   ├───default
+│       │   │       chart-area-interactive.tsx
+│       │   │       data-table.tsx
+│       │   │       data.json
+│       │   │       page.tsx
+│       │   │       section-cards.tsx
+│       │   │       
+│       │   └───_components
+│       │       └───sidebar
+│       │               account-switcher.tsx
+│       │               app-sidebar.tsx
+│       │               layout-controls.tsx
+│       │               nav-documents.tsx
+│       │               nav-main.tsx
+│       │               nav-secondary.tsx
+│       │               nav-user.tsx
+│       │               theme-switcher.tsx
+│       │               
+│       └───unauthorized
+│               page.tsx
+│               
+├───components
+│   └───ui
+│           accordion.tsx
+│           alert-dialog.tsx
+│           alert.tsx
+│           aspect-ratio.tsx
+│           avatar.tsx
+│           badge.tsx
+│           breadcrumb.tsx
+│           button.tsx
+│           calendar.tsx
+│           card.tsx
+│           carousel.tsx
+│           chart.tsx
+│           checkbox.tsx
+│           collapsible.tsx
+│           command.tsx
+│           context-menu.tsx
+│           dialog.tsx
+│           drawer.tsx
+│           dropdown-menu.tsx
+│           form.tsx
+│           hover-card.tsx
+│           input-otp.tsx
+│           input.tsx
+│           label.tsx
+│           menubar.tsx
+│           navigation-menu.tsx
+│           pagination.tsx
+│           popover.tsx
+│           progress.tsx
+│           radio-group.tsx
+│           resizable.tsx
+│           scroll-area.tsx
+│           select.tsx
+│           separator.tsx
+│           sheet.tsx
+│           sidebar.tsx
+│           skeleton.tsx
+│           slider.tsx
+│           sonner.tsx
+│           switch.tsx
+│           table.tsx
+│           tabs.tsx
+│           textarea.tsx
+│           toggle-group.tsx
+│           toggle.tsx
+│           tooltip.tsx
+│           
+├───config
+│       app-config.ts
+│       
+├───data
+│       users.ts
+│       
+├───hooks
+│       use-mobile.ts
+│       
+├───lib
+│       layout-preferences.ts
+│       utils.ts
+│       
+├───navigation
+│   └───sidebar
+│           sidebar-items.ts
+│           
+└───server
+        server-actions.ts
+        
