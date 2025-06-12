@@ -1,8 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
+/*noinspection CssInvalidAtRule*/
 @custom-variant dark (&:is(.dark *));
 
+/*noinspection CssInvalidAtRule*/
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -119,8 +122,204 @@
         @apply border-border outline-ring/50;
     }
 
+    html {
+        overflow: hidden;
+        height: 100vh;
+    }
+
     body {
         @apply bg-[image:var(--gradient-body)] bg-fixed bg-cover text-foreground overscroll-none;
+        overflow: hidden;
+        height: 100vh;
         /*@apply bg-background text-foreground overscroll-none;*/
     }
 }
+
+/*=======================*/
+
+/* Добавить в конец globals.css */
+
+/* Исправление скролла - только в grid layout */
+.layout {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Grid items */
+.react-grid-item {
+    box-sizing: border-box;
+    position: absolute;
+    transition: all 200ms ease;
+    transition-property: left, top, width, height;
+    z-index: 1;
+}
+
+/* Стандартный resize handle - скрываем визуально, оставляем функционал */
+.react-resizable-handle {
+    opacity: 0;
+    background: transparent;
+}
+
+.react-resizable-handle-se {
+    width: 20px;
+    height: 20px;
+    cursor: se-resize;
+}
+
+/* Кастомная иконка resize поверх функционального handle */
+.react-grid-item::after {
+    content: "⋰";
+    text-align: center;
+    width: 15px;
+    height: 15px;
+    color: oklch(0.14 0.01 38.49);
+    opacity: 0.7;
+    cursor: se-resize;
+    z-index: 10;
+    user-select: none;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 12px;
+    transition: all 0.2s;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    pointer-events: none;
+}
+
+.react-grid-item:hover::after {
+    opacity: 1;
+    transform: scale(1.5);
+    color: oklch(0.14 0.01 38.49);
+}
+
+/* Стильные зеленые placeholder'ы - светлая тема - высокая специфичность */
+.layout .react-grid-item.react-grid-placeholder.react-grid-placeholder {
+    background: linear-gradient(135deg, oklch(0.92 0.15 140 / 0.1), oklch(0.88 0.20 140 / 0.3));
+    border: 2px dashed oklch(0.55 0.25 140 / 0.5);
+    border-radius: 12px;
+    opacity: 0.95;
+    /*transition-duration: 250ms;*/
+    z-index: 0;
+    user-select: none;
+    box-shadow: 0 4px 12px oklch(0.70 0.20 140 / 0.4);
+    backdrop-filter: blur(4px);
+}
+
+/* Элемент во время перетаскивания */
+.layout .react-grid-item.dragging.dragging {
+    z-index: 3;
+    opacity: 0.9;
+    transform: rotate(2deg);
+    /*transition: transform 250ms ease;*/
+    box-shadow: 0 8px 24px oklch(0.70 0.20 140 / 0.4);
+}
+
+/* Drag handle */
+.react-grid-draghandle {
+    cursor: move;
+    user-select: none;
+    position: relative;
+}
+
+.react-grid-draghandle:hover {
+    opacity: 0.8;
+}
+
+/* Темная тема - яркие контрастные зеленые placeholder'ы */
+.dark .layout .react-grid-item.react-grid-placeholder.react-grid-placeholder {
+    background: linear-gradient(135deg, oklch(0.40 0.18 140 / 0.1), oklch(0.45 0.22 140 / 0.3));
+    border: 2px dashed oklch(0.65 0.25 140 / 0.5);
+    box-shadow: 0 4px 12px oklch(0.50 0.20 140 / 0.4);
+}
+
+.dark .layout .react-grid-item.dragging.dragging {
+    box-shadow: 0 8px 24px oklch(0.50 0.20 140 / 0.5);
+}
+
+.dark .react-grid-item::after {
+    color: oklch(0.88 0.06 254.13);
+}
+
+.dark .react-grid-item:hover::after {
+    color: oklch(0.78 0.06 254.13);
+}
+
+/* НОВОЕ: Отключение выделения текста во время resize и drag операций */
+/* Глобальное отключение выделения при любых активных состояниях */
+.layout:active,
+.layout:active *,
+.react-grid-item:active,
+.react-grid-item:active * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Отключаем выделение во время resize */
+.react-grid-item.resizing,
+.react-grid-item.resizing * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Отключаем выделение во время drag */
+.react-grid-item.dragging,
+.react-grid-item.dragging * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Дополнительно: отключение выделения при нажатии на resize handle и его область */
+.react-resizable-handle,
+.react-resizable-handle *,
+.react-resizable-handle:active,
+.react-resizable-handle:active * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Агрессивное отключение при любом взаимодействии с resize областью */
+.react-grid-item:has(.react-resizable-handle:active),
+.react-grid-item:has(.react-resizable-handle:active) * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Также отключаем pointer-events для содержимого во время операций */
+.react-grid-item.resizing [data-slot="card-content"],
+.react-grid-item.dragging [data-slot="card-content"] {
+    pointer-events: none;
+}
+
+/* Дополнительная защита для всего содержимого виджетов при активном взаимодействии */
+.layout.react-grid-layout:active .react-grid-item [data-slot="card-content"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Производительность */
+.react-grid-item {
+    will-change: left, top, width, height;
+    contain: layout style paint;
+}
+

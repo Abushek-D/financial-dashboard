@@ -1,199 +1,245 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Responsive, WidthProvider } from "react-grid-layout";
-import { BalanceWidget } from "@/components/widgets/balance-widget";
-import { ClientsWidget } from "@/components/widgets/clients-widget";
-import { OperationsWidget } from "@/components/widgets/operations-widget";
-import { GrowthWidget } from "@/components/widgets/growth-widget";
+import {useCallback} from "react";
+import {Responsive, WidthProvider, Layout} from "react-grid-layout";
+import {useGridLayout} from "@/contexts/grid-layout-context";
 
-// Импорт CSS для react-grid-layout
+// UI компоненты
+import {TrendingDown, TrendingUp, Wallet, Users, TrendingUp as Growth, BarChart3, Minus, Maximize2, X} from "lucide-react";
+import {Badge} from "@/components/ui/badge";
+import {Card, CardDescription, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
+
 import "react-grid-layout/css/styles.css";
-import "react-grid-layout/css/react-resizable.css";
+import "react-resizable/css/styles.css";
 
-// ResponsiveGridLayout с WidthProvider
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-// Все доступные виджеты
-const ALL_WIDGETS = [
-    {
-        id: 'balance',
-        name: 'Общий баланс',
-        component: 'BalanceWidget',
-        defaultSize: { w: 4, h: 3 }
-    },
-    {
-        id: 'clients',
-        name: 'Новые клиенты',
-        component: 'ClientsWidget',
-        defaultSize: { w: 4, h: 3 }
-    },
-    {
-        id: 'operations',
-        name: 'Активные операции',
-        component: 'OperationsWidget',
-        defaultSize: { w: 4, h: 3 }
-    },
-    {
-        id: 'growth',
-        name: 'Темп роста',
-        component: 'GrowthWidget',
-        defaultSize: { w: 4, h: 3 }
-    }
-];
-
 export default function Test1Page() {
-    // Активные виджеты на сетке (пока только balance)
-    const [items, setItems] = useState([
-        {
-            i: 'balance',
-            x: 0,
-            y: 0,
-            w: 4,
-            h: 3,
-            component: 'BalanceWidget'
-        }
-    ]);
+    const {layouts, setLayouts} = useGridLayout();
 
-    const [layouts, setLayouts] = useState({});
-    const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
-    const [cols, setCols] = useState({ lg: 16, md: 10, sm: 6, xs: 4, xxs: 2 });
-
-    // Доступные для добавления виджеты (НЕ на сетке)
-    const availableWidgets = useMemo(() => {
-        return ALL_WIDGETS.filter(widget =>
-            !items.some(item => item.i === widget.id)
-        );
-    }, [items]);
-
-    // Обработчики событий
-    const onLayoutChange = (layout, layouts) => {
-        setLayouts(layouts);
-    };
-
-    const onBreakpointChange = (breakpoint, cols) => {
-        setCurrentBreakpoint(breakpoint);
-        setCols(cols);
-    };
-
-    // Добавление виджета
-    const addWidget = (widget) => {
-        const newItem = {
-            i: widget.id,
-            x: (items.length * 4) % cols[currentBreakpoint],
-            y: Infinity, // помещает в конец
-            w: widget.defaultSize.w,
-            h: widget.defaultSize.h,
-            component: widget.component
-        };
-
-        setItems(prevItems => [...prevItems, newItem]);
-    };
-
-    // Удаление виджета
-    const removeWidget = (widgetId) => {
-        setItems(prevItems => prevItems.filter(item => item.i !== widgetId));
-    };
-
-    // Рендер виджета
-    const createElement = (item) => {
-        const removeStyle = {
-            position: 'absolute' as const,
-            right: '8px',
-            top: '8px',
-            cursor: 'pointer',
-            background: 'rgba(0,0,0,0.1)',
-            borderRadius: '50%',
-            width: '24px',
-            height: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            zIndex: 1000
-        };
-
-        return (
-            <div key={item.i} className="relative">
-                {/* Кнопка удаления */}
-                <span
-                    style={removeStyle}
-                    onClick={() => removeWidget(item.i)}
-                    className="hover:bg-red-500 hover:text-white transition-colors"
-                    title={`Удалить ${item.component}`}
-                >
-          ×
-        </span>
-
-                {/* Рендер компонента виджета */}
-                {item.component === 'BalanceWidget' && <BalanceWidget />}
-                {item.component === 'ClientsWidget' && <ClientsWidget />}
-                {item.component === 'OperationsWidget' && <OperationsWidget />}
-                {item.component === 'GrowthWidget' && <GrowthWidget />}
-            </div>
-        );
-    };
-
-    // Обработчик контекстного меню (пока просто alert)
-    const handleContextMenu = (e) => {
-        e.preventDefault();
-
-        if (availableWidgets.length === 0) {
-            alert('Все виджеты уже добавлены на dashboard');
-            return;
-        }
-
-        // Временное решение - показываем доступные виджеты через prompt
-        const widgetsList = availableWidgets.map((w, i) => `${i + 1}. ${w.name}`).join('\n');
-        const choice = prompt(`Доступные виджеты для добавления:\n\n${widgetsList}\n\nВведите номер виджета для добавления:`);
-
-        const index = parseInt(choice) - 1;
-        if (index >= 0 && index < availableWidgets.length) {
-            addWidget(availableWidgets[index]);
-        }
-    };
+    const onLayoutChange = useCallback((layout: Layout[], allLayouts: any) => {
+        setLayouts(allLayouts);
+    }, [setLayouts]);
 
     return (
-        <div className="flex flex-1 flex-col p-4">
+        <ResponsiveGridLayout
+            className="layout h-full w-full"           // CSS классы: layout для стилей, h-full w-full для заполнения всей области
+            layouts={layouts}                          // Конфигурация позиций виджетов для разных breakpoints (lg/md/sm/xs)
+            breakpoints={{lg: 1200, md: 996, sm: 768, xs: 480}}  // Ширина экрана для переключения между layouts
+            cols={{lg: 12, md: 10, sm: 6, xs: 4}}    // Количество колонок в сетке для каждого breakpoint
+            rowHeight={60}                            // Высота одной строки в пикселях
+            margin={[16, 16]}                         // Отступы между виджетами [горизонтальный, вертикальный]
+            isDraggable={true}                        // Разрешить перетаскивание виджетов
+            isResizable={true}                        // Разрешить изменение размеров виджетов
+            onLayoutChange={onLayoutChange}           // Callback при изменении позиций - сохраняет в localStorage
+            draggableHandle=".react-grid-draghandle"  // CSS селектор элемента за который можно тащить (только header виджета)
+            autoSize={false}                          // Отключить автоматический расчет высоты контейнера
+            compactType="vertical"                    // Вертикальная компактификация
+        >
+            {/* Виджет 1: Общий баланс */}
+            <Card key="total-balance" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-primary/10 backdrop-blur-sm">
+                        <Wallet className="size-3.5 text-primary"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Общий баланс</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4 h-full">
+                    <div className="flex items-start justify-between">
+                        <CardTitle
+                            className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                            $1,247,350.00
+                        </CardTitle>
+                        <Badge variant="outline"
+                               className="bg-green-50/80 border-green-200/60 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400">
+                            <TrendingUp className="size-3"/>
+                            +12.5%
+                        </Badge>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                            Рост за месяц <TrendingUp className="size-4"/>
+                        </div>
+                        <div className="text-sm text-muted-foreground/70">USD эквивалент всех счетов</div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* Контейнер с контекстным меню */}
-            <div
-                className="w-full min-h-[600px] bg-transparent"
-                onContextMenu={handleContextMenu}
-                style={{ userSelect: 'none' }}
-            >
+            {/* Виджет 2: Новые клиенты */}
+            <Card key="new-clients" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-blue-500/10 backdrop-blur-sm">
+                        <Users className="size-3.5 text-blue-600 dark:text-blue-400"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Новые клиенты</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4 h-full">
+                    <div className="flex items-start justify-between">
+                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                            47
+                        </CardTitle>
+                        <Badge variant="outline"
+                               className="bg-red-50/80 border-red-200/60 text-red-700 dark:bg-red-900/30 dark:border-red-700/50 dark:text-red-400">
+                            <TrendingDown className="size-3"/>
+                            -8.2%
+                        </Badge>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm font-medium text-red-600 dark:text-red-400">
+                            Снижение за период <TrendingDown className="size-4"/>
+                        </div>
+                        <div className="text-sm text-muted-foreground/70">Требует внимания привлечения</div>
+                    </div>
+                </CardContent>
+            </Card>
 
-                {/* Основной grid контейнер */}
-                <ResponsiveGridLayout
-                    className="layout"
-                    layouts={layouts}
-                    onLayoutChange={onLayoutChange}
-                    onBreakpointChange={onBreakpointChange}
-                    breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-                    cols={cols}
-                    rowHeight={60}
-                    margin={[16, 16]}
-                    containerPadding={[0, 0]}
-                    isDraggable={true}
-                    isResizable={true}
-                    autoSize={true}
-                    preventCollision={false}
-                    compactType="vertical"
-                >
-                    {items.map(createElement)}
-                </ResponsiveGridLayout>
+            {/* Виджет 3: Активные операции */}
+            <Card key="active-operations" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-purple-500/10 backdrop-blur-sm">
+                        <BarChart3 className="size-3.5 text-purple-600 dark:text-purple-400"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Активные операции</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4 h-full">
+                    <div className="flex items-start justify-between">
+                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                            3,127
+                        </CardTitle>
+                        <Badge variant="outline"
+                               className="bg-green-50/80 border-green-200/60 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400">
+                            <TrendingUp className="size-3"/>
+                            +24.1%
+                        </Badge>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                            Высокая активность <TrendingUp className="size-4"/>
+                        </div>
+                        <div className="text-sm text-muted-foreground/70">Превышает плановые показатели</div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            </div>
+            {/* Виджет 4: Темп роста */}
+            <Card key="growth-rate" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-orange-500/10 backdrop-blur-sm">
+                        <Growth className="size-3.5 text-orange-600 dark:text-orange-400"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Темп роста</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4 h-full">
+                    <div className="flex items-start justify-between">
+                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                            +15.7%
+                        </CardTitle>
+                        <Badge variant="outline"
+                               className="bg-green-50/80 border-green-200/60 text-green-700 dark:bg-green-900/30 dark:border-green-700/50 dark:text-green-400">
+                            <TrendingUp className="size-3"/>
+                            +3.2%
+                        </Badge>
+                    </div>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                            Стабильный рост <TrendingUp className="size-4"/>
+                        </div>
+                        <div className="text-sm text-muted-foreground/70">Соответствует прогнозам</div>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {/* Информационная панель */}
-            <div className="mt-6 p-4 bg-card/50 backdrop-blur-sm rounded-lg border">
-                <h3 className="font-semibold mb-2">Управление виджетами:</h3>
-                <div className="text-sm text-muted-foreground space-y-1">
-                    <div><strong>Активные виджеты:</strong> {items.length} из {ALL_WIDGETS.length}</div>
-                    <div><strong>Доступны для добавления:</strong> {availableWidgets.map(w => w.name).join(', ') || 'Все добавлены'}</div>
-                    <div><strong>Управление:</strong> ПКМ по области → добавить виджет, × на виджете → удалить</div>
-                </div>
-            </div>
-        </div>
+            {/* Виджет 5: Заглушка для графика */}
+            <Card key="chart-placeholder" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10 backdrop-blur-sm">
+                        <BarChart3 className="size-3.5 text-emerald-600 dark:text-emerald-400"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Excel Widget</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-full">
+                    <div className="text-muted-foreground">Chart goes here</div>
+                </CardContent>
+            </Card>
+
+            {/* Виджет 6: Еще одна заглушка для графика */}
+            <Card key="chart-placeholder-2" className="@container/card group">
+                <CardHeader className="react-grid-draghandle cursor-move flex-row items-center justify-between space-y-0 pb-2 pt-1 px-4">
+                    <div className="p-1.5 rounded-lg bg-indigo-500/10 backdrop-blur-sm">
+                        <BarChart3 className="size-3.5 text-indigo-600 dark:text-indigo-400"/>
+                    </div>
+                    <CardDescription className="text-sm flex-1 ml-2">Table Widget</CardDescription>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Minus className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <Maximize2 className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button className="p-1 rounded hover:bg-white/20 dark:hover:bg-black/20 transition-colors">
+                            <X className="size-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-full">
+                    <div className="text-muted-foreground">Chart goes here</div>
+                </CardContent>
+            </Card>
+        </ResponsiveGridLayout>
     );
 }
